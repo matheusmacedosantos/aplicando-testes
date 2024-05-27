@@ -1,6 +1,23 @@
 
 # Aplicando Testes
 
+Classe que sera testada:
+
+```csharp
+using System;
+
+namespace Temperatura
+{
+    public static class ConversorTemperatura
+    {
+        public static double FahrenheitParaCelsius(double temperatura)
+            //=> (temperatura - 32) / 1.8; // Simulação de falha
+            => Math.Round((temperatura - 32) / 1.8, 2);
+    }
+}
+```
+
+
 ## Teste Unitário com xUnit
 
 ### Descrição
@@ -16,77 +33,108 @@ Os testes são estruturados utilizando os atributos **Theory** e **InlineData**,
 Existiam dois cenários de testes, um com sucesso e outro com o intuito de falha, a seguir o código com os dois tipos e depois a imagem com o teste sendo executado.
 
 ```csharp
-public static class ConversorTemperatura
+namespace Test.XUnit.Temperatura
 {
-    public static double FahrenheitParaCelsius(double temperatura)
-        => (temperatura - 32) / 1.8;
+    public class TestesConversorTemperatura
+    {
+        [Theory]
+        [InlineData(32, 0)]
+        [InlineData(47, 8.33)]
+        [InlineData(86, 30)]
+        [InlineData(90.5, 32.5)]
+        [InlineData(120.18, 48.99)]
+        [InlineData(212, 100)]
+        public void TestarConversaoTemperatura(
+            double fahrenheit, double celsius)
+        {
+            double valorCalculado =
+                ConversorTemperatura.FahrenheitParaCelsius(fahrenheit);
+            Assert.Equal(celsius, valorCalculado);
+        }
+    }
 }
 ```
 
 ### Teste executado com sucesso
 ![Teste Unitário com Sucesso](./assets/xunitresult.png)
 
-## Testes de Integração com MSTest
+### Teste executado sem sucesso
+![Teste Unitário sem Sucesso](./assets/xuniterrortest.png)
+
+## Teste de Integração com NUnit
+
+### Descrição
+NUnit é um framework de testes unitários para todos .NET, o qual permite aos desenvolvedores verificar o comportamento do código de maneira isolada e automatizada. Ele suporta uma variedade de testes, incluindo testes de unidade básicos, testes parametrizados e testes dirigidos por dados.
+
+Uma das características mais poderosas do NUnit é a sua capacidade de realizar testes parametrizados. Isso é possível através dos atributos **TestCase**, que permitem executar um único método de teste várias vezes com diferentes conjuntos de dados. Esse recurso é extremamente útil quando você deseja testar a mesma função com vários valores de entrada, garantindo a robustez e a corretude do código em diversos cenários.
+
+### Testes realizados
+Existiam dois cenários de testes, um com sucesso e outro com o intuito de falha, a seguir o código com os dois tipos e depois a imagem com o teste sendo executado.
+
+```csharp
+namespace Temperatura.Testes
+{
+    public class TestesConversorTemperatura
+    {
+        [TestCase(32, 0)]
+        [TestCase(47, 8.33)]
+        [TestCase(86, 30)]
+        [TestCase(90.5, 32.5)]
+        [TestCase(120.18, 48.99)]
+        [TestCase(212, 100)]
+        public void TesteConversaoTemperatura(
+            double tempFahrenheit, double tempCelsius)
+        {
+            double valorCalculado =
+                ConversorTemperatura.FahrenheitParaCelsius(tempFahrenheit);
+            Assert.AreEqual(tempCelsius, valorCalculado);
+        }
+    }
+}
+```
+
+### Teste executado com sucesso
+![Teste de Integração com Sucesso](./assets/nunitresult.png)
+
+### Teste executado sem sucesso
+![Teste de Integração com Sucesso](./assets/nunittesterrorresult.png)
+
+## Testes de Sistema com MSTest
 
 ### Descrição
 MSTest é o framework de testes unitários que permite aos desenvolvedores verificar o comportamento do código de maneira isolada e automatizada. Ele suporta uma variedade de testes, incluindo testes de unidade básicos, testes parametrizados e testes dirigidos por dados.
 
 Uma das características mais poderosas do MSTest é a sua capacidade de realizar testes parametrizados. Isso é possível através dos atributos **DataTestMethod** e **DataRow**, que permitem executar um único método de teste várias vezes com diferentes conjuntos de dados. Esse recurso é extremamente útil quando você deseja testar a mesma função com vários valores de entrada, garantindo a robustez e a corretude do código em diversos cenários.
 
-### Testes realizados
-Existiam dois cenários de testes, um com sucesso e outro com o intuito de falha, a seguir o código com os dois tipos e depois a imagem com o teste sendo executado.
 
 ```csharp
-[TestClass]
-public class TestesConversorTemperatura
+namespace Temperatura.Testes
 {
-    [DataRow(32, 0)]
-    [DataRow(47, 8.33)]
-    [DataRow(86, 30)]
-    [DataRow(90.5, 32.5)]
-    [DataRow(120.18, 48.99)]
-    [DataRow(212, 100)]
-    [DataTestMethod]
-    public void TesteConversaoTemperatura(double tempFahrenheit, double tempCelsius)
+    [TestClass]
+    public class TestesConversorTemperatura
     {
-        double valorCalculado = ConversorTemperatura.FahrenheitParaCelsius(tempFahrenheit);
-        Assert.AreEqual(tempCelsius, valorCalculado);
+        [DataRow(32, 0)]
+        [DataRow(47, 8.33)]
+        [DataRow(86, 30)]
+        [DataRow(90.5, 32.5)]
+        [DataRow(120.18, 48.99)]
+        [DataRow(212, 100)]
+        [DataTestMethod]
+        public void TesteConversaoTemperatura(
+            double tempFahrenheit, double tempCelsius)
+        {
+            double valorCalculado =
+                ConversorTemperatura.FahrenheitParaCelsius(tempFahrenheit);
+            Assert.AreEqual(tempCelsius, valorCalculado);
+        }
     }
 }
 ```
 
 ### Teste executado com sucesso
-![Teste de Integração com Sucesso](./assets/mstestresult.png)
+![Teste com MSTest com Sucesso](./assets/mstestresult.png)
 
-## Testes com Mock Objects
 
-### Descrição
-Mock Objects são uma ferramenta fundamental no desenvolvimento de software, e na construção de testes unitários, onde simulam o comportamento de objetos reais em um ambiente controlado. Esses objetos são muito úteis para simular as dependências externas, o que permite o teste dos componentes de maneira isolada. Isso evita a necessidade de interações com bancos de dados, APIs externas ou qualquer outro serviço que possa variar, ser instável ou difícil de replicar em um ambiente de teste.
 
-O principal objetivo dos Mock Objects é permitir que sejam configuradas expectativas, retornos e comportamentos esperados das dependências que não fazem parte do teste em si. Com mocks, é possível assegurar que o código em teste se comporta como esperado, independentemente das variações ou instabilidades de outras dependências externas.
-
-### Testes realizados
-Existiam dois cenários de testes, um com sucesso e outro com o intuito de falha, a seguir o código com os dois tipos e depois a imagem com o teste sendo executado.
-
-```csharp
-public class TestesConversorTemperatura
-{
-    [Fact]
-    public void TesteConversaoTemperatura()
-    {
-        // Arrange
-        var mockConversor = new Mock<IConversorTemperatura>();
-        mockConversor.Setup(m => m.FahrenheitParaCelsius(It.IsAny<double>())).Returns((double t) => (t - 32) / 1.8);
-
-        // Act
-        double resultado = mockConversor.Object.FahrenheitParaCelsius(100);
-
-        // Assert
-        Assert.Equal(37.78, resultado, 2);
-    }
-}
-```
-
-### Teste executado com sucesso
-![Teste com Mock Objects com Sucesso](./assets/mocktestresult.png)
-
+### Teste executado sem sucesso
+![Teste de Integração com Sucesso](./assets/mstesterrorresult.png)
